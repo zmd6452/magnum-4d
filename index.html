@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malaysia 4D Results Tracker</title>
+  <meta name="theme-color" content="#0d6efd">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif; 
+      padding: 20px; 
+      max-width: 1200px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    h1 { text-align: center; color: #1a1a1a; margin-bottom: 30px; }
+    .buttons { 
+      text-align: center; 
+      margin-bottom: 20px; 
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button { 
+      padding: 12px 20px; 
+      margin: 4px; 
+      background: linear-gradient(45deg, #007bff, #0056b3); 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+    }
+    button:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+    }
+    button.active {
+      background: linear-gradient(45deg, #28a745, #20c997);
+      box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+    }
+    input { 
+      padding: 12px; 
+      width: 300px; 
+      margin: 10px auto;
+      display: block;
+      border: 2px solid #ddd; 
+      border-radius: 8px; 
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 10px rgba(0,123,255,0.2);
+    }
+    .controls {
+      text-align: center;
+      margin: 20px 0;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 14px; 
+      margin: 20px 0; 
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    th, td { 
+      border: 1px solid #e9ecef; 
+      padding: 12px; 
+      text-align: center; 
+    }
+    th { 
+      background: linear-gradient(45deg, #f8f9fa, #e9ecef); 
+      font-weight: 700;
+      color: #495057;
+      position: sticky;
+      top: 0;
+    }
+    .prize-1st { font-weight: bold; color: #ffd700; background: rgba(255,215,0,0.1); }
+    .prize-2nd { font-weight: bold; color: #c0c0c0; background: rgba(192,192,192,0.1); }
+    .prize-3rd { font-weight: bold; color: #cd7f32; background: rgba(205,127,50,0.1); }
+    .number-cell { font-family: monospace; font-weight: bold; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    tr:hover { background: #e3f2fd; }
+    .loading { text-align: center; color: #6c757d; font-style: italic; }
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .buttons { flex-direction: column; align-items: center; }
+      input { width: 100%; max-width: 300px; }
+      table { font-size: 12px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Malaysia 4D Results Tracker</h1>
+
+  <div class="buttons">
+    <button onclick="loadResults('magnum')" class="active" id="magnum-btn">Magnum 4D</button>
+    <button onclick="loadResults('toto')">Sports Toto</button>
+    <button onclick="loadResults('damacai')">Da Ma Cai</button>
+  </div>
+
+  <div class="controls">
+    <input id="search" placeholder="🔍 Search 4D number (0000-9999)" oninput="debouncedSearch()">
+    <br>
+    <button onclick="exportCSV()">📊 Export CSV</button>
+  </div>
+
+  <h2 id="title">Select a company to view results</h2>
+  <table id="results">
+    <tr class="loading"><td colspan="6">Click a button above to load results</td></tr>
+  </table>
+
+  <h2>📈 Number Frequency (Top 50)</h2>
+  <table id="frequency">
+    <tr><td colspan="3" class="loading">Frequency data will appear here</td></tr>
+  </table>
+
+  <script>
+    let currentData = [];
+    let currentType = '';
+    let searchTimeout;
+
+    function setActiveButton(type) {
+      document.querySelectorAll('.buttons button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(type + '-btn')?.classList.add('active');
+    }
+
+    function loadResults(type) {
+      currentType = type;
+      setActiveButton(type);
+      
+      const titleEl = document.getElementById('title');
+      titleEl.innerText = `${type.toUpperCase()} 4D Results - Loading...`;
+      
+      fetch('https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/Responses')
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(rows => {
+          const data = rows
+            .filter(r => r.Company && r.Company.toLowerCase() === type.toLowerCase())
+            .map(r => ({
+              date: r.Date || 'N/A',
+              first: r.First || '',
+              second: r.Second || '',
+              third: r.Third || '',
+              special: (r.Special || '').split(',').map(n => n.trim()).filter(Boolean),
+              consolation: (r.Consolation || '').split(',').map(n => n.trim()).filter(Boolean)
+            }))
+            .filter(d => d.date !== 'N/A')
+            .reverse();
+
+          currentData = data;
+          titleEl.innerText = `${type.toUpperCase()} 4D Results (${data.length} draws)`;
+
+          renderTable(data);
+          renderFrequency(data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          titleEl.innerText = `${type.toUpperCase()} - Error loading data`;
+          document.getElementById('results').innerHTML = 
+            '<tr><td colspan="6" style="color:red;">Failed to load data. Please try again.</td></tr>';
+        });
+    }
+
+    function renderTable(data) {
+      const table = document.getElementById('results');
+      table.innerHTML = `
+        <tr>
+          <th>Date</th><th>1st Prize</th><th>2nd Prize</th><th>3rd Prize</th><th>Special</th><th>Consolation</th>
+        </tr>`;
+      
+      data.forEach(d => {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${formatDate(d.date)}</td>
+          <td class="prize-1st">${d.first || '-'}</td>
+          <td class="prize-2nd">${d.second || '-'}</td>
+          <td class="prize-3rd">${d.third || '-'}</td>
+          <td>${d.special.length ? d.special.join(', ') : '-'}</td>
+          <td>${d.consolation.length ? d.consolation.join(', ') : '-'}</td>
+        `;
+      });
+    }
+
+    function formatDate(dateStr) {
+      try {
+        return new Date(dateStr).toLocaleDateString('en-MY', { 
+          year: 'numeric', month: 'short', day: 'numeric' 
+        });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function debouncedSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(searchNumber, 300);
+    }
+
+    function searchNumber() {
+      const query = document.getElementById('search').value.trim().toLowerCase();
+      const filtered = query ? 
+        currentData.filter(d => 
+          [d.first, d.second, d.third, ...d.special, ...d.consolation]
+            .some(n => n && n.toLowerCase().includes(query))
+        ) : currentData;
+      
+      renderTable(filtered);
+      document.getElementById('title').innerText = 
+        `${currentType.toUpperCase()} 4D Results ${query ? ` - ${filtered.length} matches` : `(${currentData.length} draws)`}`;
+    }
+
+    function renderFrequency(data) {
+      const frequency = {};
+      data.forEach(d => {
+        [d.first, d.second, d.third, ...d.special, ...d.consolation]
+          .filter(Boolean).forEach(num => frequency[num] = (frequency[num] || 0) + 1);
+      });
+
+      const table = document.getElementById('frequency');
+      table.innerHTML = '<tr><th>Number</th><th>Frequency</th><th>Last Seen</th></tr>';
+      
+      Object.entries(frequency)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 50)
+        .forEach(([num, count]) => {
+          const row = table.insertRow();
+          row.innerHTML = `
+            <td class="number-cell">${num}</td>
+            <td><strong>${count}</strong></td>
+            <td>${findLastSeen(num)}</td>
+          `;
+        });
+    }
+
+    function findLastSeen(number) {
+      for (let i = currentData.length - 1; i >= 0; i--) {
+        if ([currentData[i].first, currentData[i].second, currentData[i].third, 
+             ...currentData[i].special, ...currentData[i].consolation].includes(number)) {
+          return formatDate(currentData[i].date);
+        }
+      }
+      return '-';
+    }
+
+    function exportCSV() {
+      if (!currentData.length) {
+        alert('No data to export!');
+        return;
+      }
+      const csv = [
+        ['Date', '1st', '2nd', '3rd', 'Special', 'Consolation'],
+        ...currentData.map(d => [d.date, d.first, d.second, d.third, 
+          d.special.join(' '), d.consolation.join(' ')])
+      ].map(row => row.map(field => `"${field}"`).join(',')).join('
+');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Malaysia-4D-${currentType}-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Auto-load Magnum on start
+    window.addEventListener('load', () => loadResults('magnum'));
+
+    // PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
