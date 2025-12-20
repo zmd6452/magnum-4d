@@ -1,7 +1,7 @@
-const CACHE_NAME = 'malaysia-4d-v3';
-const CORE_CACHE = 'core-v1';
+const CORE_CACHE = 'core-v2';
+const DATA_CACHE = 'data-v2';
 
-// ✅ USE SHEET INDEX, NOT NAME
+// ✅ USE SHEET INDEX (stable)
 const API_URL = 'https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/1';
 
 const CORE_FILES = [
@@ -12,66 +12,71 @@ const CORE_FILES = [
   './icons/icon-512.png'
 ];
 
-/* ================= INSTALL ================= */
+/* ========== INSTALL ========== */
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
-      // Clean old caches
       const keys = await caches.keys();
-      await Promise.all(
-        keys.map(key => {
-          if (![CACHE_NAME, CORE_CACHE].includes(key)) {
-            return caches.delete(key);
-          }
-        })
-      );
+      await Promise.all(keys.map(k => caches.delete(k)));
 
-      // Cache core files
       const cache = await caches.open(CORE_CACHE);
       await cache.addAll(CORE_FILES);
     })()
   );
-
   self.skipWaiting();
 });
 
-/* ================= ACTIVATE ================= */
+/* ========== ACTIVATE ========== */
 self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 
-/* ================= FETCH ================= */
+/* ========== FETCH ========== */
 self.addEventListener('fetch', event => {
-  const { request } = event;
+  const req = event.request;
 
-  // 🔹 API: Network-first with cache fallback
-  if (request.url.startsWith(API_URL)) {
+  // 🔹 API: network-first, cache fallback
+  if (req.url.startsWith(API_URL)) {
     event.respondWith(
       (async () => {
         try {
-          const response = await fetch(request);
-          const cache = await caches.open(CACHE_NAME);
-          await cache.put(request, response.clone());
-          return response;
+          const res = await fetch(req);
+          const clone = res.clone();
+          const cache = await caches.open(DATA_CACHE);
+          await cache.put(req, clone);
+          return res;
         } catch {
-          const cache = await caches.open(CACHE_NAME);
-          return cache.match(request);
+          const cache = await caches.open(DATA_CACHE);
+          return cache.match(req);
         }
       })()
     );
     return;
   }
 
-  // 🔹 HTML: cache-first with network fallback
-  if (request.destination === 'document') {
+  // 🔹 HTML
+  if (req.destination === 'document') {
     event.respondWith(
-      caches.match('./index.html').then(res => res || fetch(request))
+      caches.match('./index.html').then(r => r || fetch(req))
     );
     return;
   }
 
-  // 🔹 Other assets
+  // 🔹 Assets
   event.respondWith(
-    caches.match(request).then(res => res || fetch(request))
+    caches.match(req).then(r => r || fetch(req))
   );
 });
+
+/* ========== BACKGROUND SYNC ========== */
+self.addEventListener('sync', event => {
+  if (event.tag === 'refresh-4d') {
+    event.waitUntil(refreshData());
+  }
+});
+
+async function refreshData() {
+  const res = await fetch(API_URL);
+  const cache = await caches.open(DATA_CACHE);
+  await cache.put(API_URL, res.clone());
+}
