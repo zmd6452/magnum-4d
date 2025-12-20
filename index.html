@@ -1,300 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malaysia 4D Results Tracker</title>
-  <meta name="theme-color" content="#0d6efd">
-  <link rel="manifest" href="manifest.json">
-  <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif; 
-      padding: 20px; 
-      max-width: 1200px;
-      margin: 0 auto;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
-    }
-    h1 { text-align: center; color: #1a1a1a; margin-bottom: 30px; }
-    .buttons { 
-      text-align: center; 
-      margin-bottom: 20px; 
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    button { 
-      padding: 12px 20px; 
-      margin: 4px; 
-      background: linear-gradient(45deg, #007bff, #0056b3); 
-      color: white; 
-      border: none; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,123,255,0.3);
-    }
-    button:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,123,255,0.4);
-    }
-    button.active {
-      background: linear-gradient(45deg, #28a745, #20c997);
-      box-shadow: 0 4px 15px rgba(40,167,69,0.4);
-    }
-    input { 
-      padding: 12px; 
-      width: 300px; 
-      margin: 10px auto;
-      display: block;
-      border: 2px solid #ddd; 
-      border-radius: 8px; 
-      font-size: 16px;
-      transition: border-color 0.3s;
-    }
-    input:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 10px rgba(0,123,255,0.2);
-    }
-    .controls {
-      text-align: center;
-      margin: 20px 0;
-    }
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      font-size: 14px; 
-      margin: 20px 0; 
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    }
-    th, td { 
-      border: 1px solid #e9ecef; 
-      padding: 12px; 
-      text-align: center; 
-    }
-    th { 
-      background: linear-gradient(45deg, #f8f9fa, #e9ecef); 
-      font-weight: 700;
-      color: #495057;
-      position: sticky;
-      top: 0;
-    }
-    .prize-1st { font-weight: bold; color: #ffd700; background: rgba(255,215,0,0.1); }
-    .prize-2nd { font-weight: bold; color: #c0c0c0; background: rgba(192,192,192,0.1); }
-    .prize-3rd { font-weight: bold; color: #cd7f32; background: rgba(205,127,50,0.1); }
-    .number-cell { font-family: monospace; font-weight: bold; }
-    tr:nth-child(even) { background: #f8f9fa; }
-    tr:hover { background: #e3f2fd; }
-    .loading { text-align: center; color: #6c757d; font-style: italic; }
-    @media (max-width: 768px) {
-      body { padding: 10px; }
-      .buttons { flex-direction: column; align-items: center; }
-      input { width: 100%; max-width: 300px; }
-      table { font-size: 12px; }
-      th, td { padding: 8px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malaysia 4D Results Tracker</title>
+
+<meta name="description" content="Malaysia 4D results tracker for Magnum, Toto and Da Ma Cai. Frequency, hot numbers, predictions and CSV export.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0d6efd">
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{font-family:Arial,sans-serif;max-width:1200px;margin:auto;padding:10px}
+button{padding:10px 15px;margin:5px;border:none;border-radius:6px;background:#0d6efd;color:#fff}
+button.active{background:#198754}
+table{width:100%;border-collapse:collapse;margin:15px 0}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+th{background:#f1f1f1}
+#statusBanner{display:none;padding:8px;text-align:center;background:#dc3545;color:#fff;font-weight:bold}
+canvas{max-width:100%}
+</style>
 </head>
+
 <body>
-  <h1>🎰 Malaysia 4D Results Tracker</h1>
+<div id="statusBanner">⚠️ Offline — showing cached data</div>
 
-<div id="statusBanner" style="
-  display:none;
-  padding:10px;
-  text-align:center;
-  background:#dc3545;
-  color:white;
-  font-weight:bold;">
-  ⚠️ You are offline — showing cached data
-</div>
-  
-  <div class="buttons">
-    <button onclick="loadResults('magnum')" class="active" id="magnum-btn">Magnum 4D</button>
-    <button onclick="loadResults('toto')">Sports Toto</button>
-    <button onclick="loadResults('damacai')">Da Ma Cai</button>
-  </div>
+<h1>🎰 Malaysia 4D Results Tracker</h1>
 
-  <div class="controls">
-    <input id="search" placeholder="🔍 Search 4D number (0000-9999)" oninput="debouncedSearch()">
-    <br>
-    <button onclick="exportCSV()">📊 Export CSV</button>
-  </div>
+<button onclick="loadResults('magnum')" class="active">Magnum</button>
+<button onclick="loadResults('toto')">Toto</button>
+<button onclick="loadResults('damacai')">Da Ma Cai</button>
 
-  <h2 id="title">Select a company to view results</h2>
-  <table id="results">
-    <tr class="loading"><td colspan="6">Click a button above to load results</td></tr>
-  </table>
+<input id="search" placeholder="Search number" oninput="searchNumber()" />
 
-  <h2>📈 Number Frequency (Top 50)</h2>
-  <table id="frequency">
-    <tr><td colspan="3" class="loading">Frequency data will appear here</td></tr>
-  </table>
+<h2 id="title"></h2>
 
-  <script>
-    let currentData = [];
-    let currentType = '';
-    let searchTimeout;
+<table id="results"></table>
 
-    function setActiveButton(type) {
-      document.querySelectorAll('.buttons button').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(type + '-btn')?.classList.add('active');
-    }
+<h2>📊 Frequency</h2>
+<table id="frequency"></table>
 
-    function loadResults(type) {
-      currentType = type;
-      setActiveButton(type);
-      
-      const titleEl = document.getElementById('title');
-      titleEl.innerText = `${type.toUpperCase()} 4D Results - Loading...`;
-      
-      fetch('https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/Responses')
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then(rows => {
-          const data = rows
-            .filter(r => r.Company && r.Company.toLowerCase() === type.toLowerCase())
-            .map(r => ({
-              date: r.Date || 'N/A',
-              first: r.First || '',
-              second: r.Second || '',
-              third: r.Third || '',
-              special: (r.Special || '').split(',').map(n => n.trim()).filter(Boolean),
-              consolation: (r.Consolation || '').split(',').map(n => n.trim()).filter(Boolean)
-            }))
-            .filter(d => d.date !== 'N/A')
-            .reverse();
+<h2>🔥 Hot & ❄️ Cold Numbers</h2>
+<canvas id="chart" height="200"></canvas>
 
-          currentData = data;
-          titleEl.innerText = `${type.toUpperCase()} 4D Results (${data.length} draws)`;
+<h2>🎯 Suggested Numbers</h2>
+<ul id="predictions"></ul>
 
-          renderTable(data);
-          renderFrequency(data);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          titleEl.innerText = `${type.toUpperCase()} - Error loading data`;
-          document.getElementById('results').innerHTML = 
-            '<tr><td colspan="6" style="color:red;">Failed to load data. Please try again.</td></tr>';
-        });
-    }
+<button onclick="exportCSV()">📥 Export CSV</button>
+<button id="installBtn" style="display:none">📲 Install App</button>
 
-    function renderTable(data) {
-      const table = document.getElementById('results');
-      table.innerHTML = `
-        <tr>
-          <th>Date</th><th>1st Prize</th><th>2nd Prize</th><th>3rd Prize</th><th>Special</th><th>Consolation</th>
-        </tr>`;
-      
-      data.forEach(d => {
-        const row = table.insertRow();
-        row.innerHTML = `
-          <td>${formatDate(d.date)}</td>
-          <td class="prize-1st">${d.first || '-'}</td>
-          <td class="prize-2nd">${d.second || '-'}</td>
-          <td class="prize-3rd">${d.third || '-'}</td>
-          <td>${d.special.length ? d.special.join(', ') : '-'}</td>
-          <td>${d.consolation.length ? d.consolation.join(', ') : '-'}</td>
-        `;
-      });
-    }
+<script>
+const API='https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/1';
+let allData=[],current='magnum';
 
-    function formatDate(dateStr) {
-      try {
-        return new Date(dateStr).toLocaleDateString('en-MY', { 
-          year: 'numeric', month: 'short', day: 'numeric' 
-        });
-      } catch {
-        return dateStr;
-      }
-    }
+async function fetchData(){
+ try{
+  const r=await fetch(API); const d=await r.json();
+  if(d.length) localStorage.setItem('4d',JSON.stringify(d));
+  return d;
+ }catch{
+  return JSON.parse(localStorage.getItem('4d')||'[]');
+ }
+}
 
-    function debouncedSearch() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(searchNumber, 300);
-    }
+async function loadResults(type){
+ current=type;
+ allData=(await fetchData()).filter(r=>r.Company?.toLowerCase()==type);
+ document.getElementById('title').innerText=type.toUpperCase()+" RESULTS";
+ renderTable(allData); renderFreq(allData);
+}
 
-    function searchNumber() {
-      const query = document.getElementById('search').value.trim().toLowerCase();
-      const filtered = query ? 
-        currentData.filter(d => 
-          [d.first, d.second, d.third, ...d.special, ...d.consolation]
-            .some(n => n && n.toLowerCase().includes(query))
-        ) : currentData;
-      
-      renderTable(filtered);
-      document.getElementById('title').innerText = 
-        `${currentType.toUpperCase()} 4D Results ${query ? ` - ${filtered.length} matches` : `(${currentData.length} draws)`}`;
-    }
+function renderTable(d){
+ const t=document.getElementById('results');
+ t.innerHTML='<tr><th>Date</th><th>1st</th><th>2nd</th><th>3rd</th></tr>';
+ d.forEach(r=>{
+  t.innerHTML+=`<tr><td>${r.Date}</td><td>${r.First}</td><td>${r.Second}</td><td>${r.Third}</td></tr>`;
+ });
+}
 
-    function renderFrequency(data) {
-      const frequency = {};
-      data.forEach(d => {
-        [d.first, d.second, d.third, ...d.special, ...d.consolation]
-          .filter(Boolean).forEach(num => frequency[num] = (frequency[num] || 0) + 1);
-      });
+function renderFreq(d){
+ const f={};
+ d.forEach(r=>[r.First,r.Second,r.Third].forEach(n=>f[n]=(f[n]||0)+1));
+ const t=document.getElementById('frequency');
+ t.innerHTML='<tr><th>Number</th><th>Count</th></tr>';
+ Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,20)
+ .forEach(([n,c])=>t.innerHTML+=`<tr><td>${n}</td><td>${c}</td></tr>`);
+ chart(f); predict(f);
+}
 
-      const table = document.getElementById('frequency');
-      table.innerHTML = '<tr><th>Number</th><th>Frequency</th><th>Last Seen</th></tr>';
-      
-      Object.entries(frequency)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 50)
-        .forEach(([num, count]) => {
-          const row = table.insertRow();
-          row.innerHTML = `
-            <td class="number-cell">${num}</td>
-            <td><strong>${count}</strong></td>
-            <td>${findLastSeen(num)}</td>
-          `;
-        });
-    }
+function chart(freq){
+ const c=document.getElementById('chart'),x=c.getContext('2d');
+ x.clearRect(0,0,c.width,c.height);
+ Object.entries(freq).slice(0,10).forEach(([n,v],i)=>{
+  x.fillStyle='#dc3545'; x.fillRect(i*30,200-v*5,20,v*5);
+ });
+}
 
-    function findLastSeen(number) {
-      for (let i = currentData.length - 1; i >= 0; i--) {
-        if ([currentData[i].first, currentData[i].second, currentData[i].third, 
-             ...currentData[i].special, ...currentData[i].consolation].includes(number)) {
-          return formatDate(currentData[i].date);
-        }
-      }
-      return '-';
-    }
+function predict(freq){
+ const arr=Object.keys(freq);
+ document.getElementById('predictions').innerHTML=
+ arr.sort(()=>0.5-Math.random()).slice(0,4).map(n=>`<li>${n}</li>`).join('');
+}
 
-    function exportCSV() {
-      if (!currentData.length) {
-        alert('No data to export!');
-        return;
-      }
-      const csv = [
-        ['Date', '1st', '2nd', '3rd', 'Special', 'Consolation'],
-        ...currentData.map(d => [d.date, d.first, d.second, d.third, 
-          d.special.join(' '), d.consolation.join(' ')])
-      ].map(row => row.map(field => `"${field}"`).join(',')).join('
-');
-      
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Malaysia-4D-${currentType}-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+function searchNumber(){
+ const q=search.value;
+ renderTable(allData.filter(r=>[r.First,r.Second,r.Third].some(n=>n.includes(q))));
+}
 
-    // Auto-load Magnum on start
-    window.addEventListener('load', () => loadResults('magnum'));
+function exportCSV(){
+ let csv="Date,1st,2nd,3rd\n";
+ allData.forEach(r=>csv+=`${r.Date},${r.First},${r.Second},${r.Third}\n`);
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+ a.download='4d.csv'; a.click();
+}
 
-    // PWA Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(console.error);
-    }
-  </script>
+// offline banner
+const b=document.getElementById('statusBanner');
+addEventListener('offline',()=>b.style.display='block');
+addEventListener('online',()=>b.style.display='none');
+
+// PWA
+if('serviceWorker'in navigator) navigator.serviceWorker.register('service-worker.js');
+let p; addEventListener('beforeinstallprompt',e=>{e.preventDefault();p=e;installBtn.style.display='block'});
+installBtn.onclick=()=>{p.prompt();installBtn.style.display='none'};
+
+loadResults('magnum');
+</script>
 </body>
 </html>
