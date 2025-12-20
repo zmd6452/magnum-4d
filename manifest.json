@@ -1,102 +1,12 @@
 {
-  "name": "Malaysia 4D Results Tracker",
+  "name": "Malaysia 4D Tracker",
   "short_name": "4D Tracker",
-  "description": "Live Magnum, Toto & Da Ma Cai 4D results with search, frequency analysis & CSV export",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": ".",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#f5f7fa",
+  "background_color": "#ffffff",
   "theme_color": "#0d6efd",
-  "theme_color_dark": "#0a58ca",
-  "categories": ["utility", "finance", "productivity"],
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/1x1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "4D Results main screen"
-    }
-  ],
-  "lang": "en-MY",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "shortcuts": [
-    {
-      "name": "Magnum Results",
-      "short_name": "Magnum",
-      "description": "View latest Magnum 4D results",
-      "url": "./index.html#magnum",
-      "icons": [{ "src": "icons/magnum-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Search Numbers",
-      "short_name": "Search",
-      "description": "Quick search for 4D numbers",
-      "url": "./index.html#search",
-      "icons": [{ "src": "icons/search-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Frequency Analysis",
-      "short_name": "Frequency",
-      "description": "View number frequency stats",
-      "url": "./index.html#frequency",
-      "icons": [{ "src": "icons/chart-96.png", "sizes": "96x96" }]
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
