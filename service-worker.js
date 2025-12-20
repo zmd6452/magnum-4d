@@ -1,4 +1,4 @@
-const CACHE='4d-v1';
+const CACHE='4d-full-ai';
 const API='https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/1';
 
 self.addEventListener('install',e=>{
