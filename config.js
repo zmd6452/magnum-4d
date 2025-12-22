@@ -1,5 +1,6 @@
 const CONFIG = {
-  requiredDigits: [1, 2],   // <-- YOU CAN CHANGE THIS
+  mustIncludeDigits: ['1', '2'],   // default
   totalPicks: 4,
-  maxFrequencyResults: 20
+  maxCandidates: 200,
+  allowRepeatDigits: true,
 };
