@@ -1,22 +1,15 @@
-function generatePicks() {
-  const must = document.getElementById("mustDigits").value.split(",").filter(Boolean);
-  const exclude = document.getElementById("excludeDigits").value.split(",").filter(Boolean);
+function generatePicks(freq, requiredDigits) {
+  const req = requiredDigits.split(",").map(d => d.trim());
+  const candidates = [];
 
-  const picks = new Set();
-
-  while (picks.size < 4) {
-    let num = "";
-    while (num.length < 4) {
-      const d = Math.floor(Math.random() * 10).toString();
-      if (!exclude.includes(d)) num += d;
+  Object.keys(freq).forEach(num => {
+    if (req.every(d => num.includes(d))) {
+      candidates.push({ num, score: freq[num] });
     }
+  });
 
-    if (must.every(d => num.includes(d))) {
-      picks.add(num);
-    }
-  }
-
-  const ul = document.getElementById("picks");
-  ul.innerHTML = "";
-  [...picks].forEach(p => ul.innerHTML += `<li>${p}</li>`);
+  return candidates
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 4)
+    .map(x => x.num);
 }
