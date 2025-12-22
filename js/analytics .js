@@ -1,14 +1,14 @@
-function buildFrequency() {
-  const freq = {};
-  RESULTS.forEach(num => {
-    num.split("").forEach(d => {
-      freq[d] = (freq[d] || 0) + 1;
-    });
-  });
+function analyze(data, mustDigits) {
+  const results = [];
 
-  const table = document.getElementById("freqTable");
-  table.innerHTML = "<tr><th>Digit</th><th>Count</th></tr>";
-  Object.keys(freq).sort().forEach(d => {
-    table.innerHTML += `<tr><td>${d}</td><td>${freq[d]}</td></tr>`;
-  });
+  for (let i = 0; i < 10000; i++) {
+    const num = i.toString().padStart(4, "0");
+
+    if (!mustContainDigits(num, mustDigits)) continue;
+
+    results.push(num);
+    if (results.length >= 10) break;
+  }
+
+  return results;
 }
