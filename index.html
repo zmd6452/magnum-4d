@@ -1,298 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Malaysia 4D AI Tracker</title>
-<meta name="description" content="Malaysia 4D AI Tracker with combined data, predictions, Markov, clustering, backtesting.">
-<meta name="robots" content="index, follow">
-<meta name="theme-color" content="#0d6efd">
-<link rel="manifest" href="manifest.json">
-<style>
-body{font-family:Arial,sans-serif;max-width:1200px;margin:auto;padding:10px}
-button{padding:10px 15px;margin:5px;border:none;border-radius:6px;background:#0d6efd;color:#fff;cursor:pointer}
-button.active{background:#198754}
-table{width:100%;border-collapse:collapse;margin:15px 0}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
-th{background:#f1f1f1}
-#statusBanner{display:none;padding:8px;text-align:center;background:#dc3545;color:#fff;font-weight:bold}
-canvas{max-width:100%}
-</style>
+  <meta charset="UTF-8" />
+  <title>Malaysia 4D Analytics</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div id="statusBanner">⚠️ Offline — showing cached data</div>
+<h1>Malaysia 4D Analytics Suite</h1>
 
-<h1>🎰 Malaysia 4D AI Tracker</h1>
+<section>
+  <h2>Manual Pick Controls</h2>
+  <label>Must include digits (comma):</label>
+  <input id="mustDigits" value="1,2">
+  <label>Exclude digits:</label>
+  <input id="excludeDigits" value="">
+  <button onclick="generatePicks()">Generate Picks</button>
+</section>
 
-<div class="buttons">
-<button onclick="loadResults('magnum')" class="active">Magnum</button>
-<button onclick="loadResults('toto')">Toto</button>
-<button onclick="loadResults('damacai')">Da Ma Cai</button>
-</div>
+<section>
+  <h2>Top Picks</h2>
+  <ul id="picks"></ul>
+</section>
 
-<input type="file" id="fileInput" accept=".csv">
-<input id="search" placeholder="Search number" oninput="searchNumber()" />
+<section>
+  <h2>Frequency Analysis</h2>
+  <table id="freqTable"></table>
+</section>
 
-<h2 id="title"></h2>
-<table id="results"></table>
-
-<h2>📊 Frequency</h2>
-<table id="frequency"></table>
-
-<h2>🔥 Hot & ❄️ Cold Numbers</h2>
-<canvas id="chart" height="200"></canvas>
-
-<h2>🎯 Simple Random Picks</h2>
-<ul id="predictions"></ul>
-
-<h2>🤖 AI Top 4 Predictions</h2>
-<table id="aiTable"></table>
-
-<h2>🧠 Explanation</h2>
-<div id="aiExplain"></div>
-
-<h2>🔁 Markov Chain Suggestions</h2>
-<table id="markovTable"></table>
-
-<h2>📊 Clustering (Hot / Neutral / Cold)</h2>
-<table id="clusterTable"></table>
-
-<h2>📈 Backtesting Results</h2>
-<table id="backtestTable"></table>
-
-<button onclick="exportCSV()">📥 Export CSV</button>
-<button id="installBtn" style="display:none">📲 Install App</button>
-
-<script>
-const SHEET_API='https://opensheet.elk.sh/16NJ3an81qlkX7HWcLOXnxQc-x4GXvpk_KbHXgVEVSn0/1';
-let allData=[],current='magnum';
-
-/* ===============================
-   DATA FETCHING (Google Sheet or CSV)
-================================= */
-async function fetchSheetData(){
- try{
-  const r=await fetch(SHEET_API);
-  const d=await r.json();
-  if(d.length) localStorage.setItem('4d',JSON.stringify(d));
-  return d;
- }catch{
-  return JSON.parse(localStorage.getItem('4d')||'[]');
- }
-}
-
-function parseCSV(text){
- const rows=text.split('\n').slice(1);
- return rows.map(row=>{
-   const [Date,Company,First,Second,Third,Special,Consolation]=row.split(',');
-   return {Date,Company,First,Second,Third,Special,Consolation};
- });
-}
-
-/* ===============================
-   LOAD RESULTS
-================================= */
-async function loadResults(type){
- current=type;
- if(window.uploadedCSV){
-   allData=window.uploadedCSV.filter(r=>r.Company?.toLowerCase()==type.toLowerCase());
- } else {
-   allData=(await fetchSheetData()).filter(r=>r.Company?.toLowerCase()==type.toLowerCase());
- }
- document.getElementById('title').innerText=type.toUpperCase()+" RESULTS";
- renderTable(allData); renderFreq(allData); runAI();
- runMarkov(allData); runCluster(allData); runBacktest(allData);
-}
-
-/* ===============================
-   CSV UPLOAD
-================================= */
-document.getElementById('fileInput').addEventListener('change', async (e)=>{
- const file=e.target.files[0];
- const text=await file.text();
- window.uploadedCSV=parseCSV(text);
- loadResults(current);
-});
-
-/* ===============================
-   TABLE RENDERS
-================================= */
-function renderTable(d){
- const t=document.getElementById('results');
- t.innerHTML='<tr><th>Date</th><th>1st</th><th>2nd</th><th>3rd</th></tr>';
- d.forEach(r=>t.innerHTML+=`<tr><td>${r.Date}</td><td>${r.First}</td><td>${r.Second}</td><td>${r.Third}</td></tr>`);
-}
-
-function renderFreq(d){
- const f={};
- d.forEach(r=>[r.First,r.Second,r.Third].forEach(n=>{if(n) f[n]=(f[n]||0)+1}));
- const t=document.getElementById('frequency');
- t.innerHTML='<tr><th>Number</th><th>Count</th></tr>';
- Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,20).forEach(([n,c])=>t.innerHTML+=`<tr><td>${n}</td><td>${c}</td></tr>`);
- renderChart(f); renderPredictions(f);
-}
-
-/* ===============================
-   CHART
-================================= */
-function renderChart(freq){
- const c=document.getElementById('chart'),x=c.getContext('2d');
- x.clearRect(0,0,c.width,c.height);
- Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([n,v],i)=>{
-  x.fillStyle=i<5?'#dc3545':'#0d6efd';
-  x.fillRect(i*35,200-v*5,30,v*5);
-  x.fillStyle='#000'; x.fillText(n,i*35+5,195);
- });
-}
-
-/* ===============================
-   SIMPLE RANDOM PICKS
-================================= */
-function renderPredictions(freq){
- const arr=Object.keys(freq);
- document.getElementById('predictions').innerHTML=arr.sort(()=>0.5-Math.random()).slice(0,4).map(n=>`<li>${n}</li>`).join('');
-}
-
-/* ===============================
-   SEARCH
-================================= */
-function searchNumber(){const q=document.getElementById('search').value;
- renderTable(allData.filter(r=>[r.First,r.Second,r.Third].some(n=>n.includes(q))));}
-
-/* ===============================
-   EXPORT CSV
-================================= */
-function exportCSV(){
- let csv="Date,1st,2nd,3rd\n";
- allData.forEach(r=>csv+=`${r.Date},${r.First},${r.Second},${r.Third}\n`);
- const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='4d.csv'; a.click();
-}
-
-/* ===============================
-   OFFLINE BANNER
-================================= */
-const b=document.getElementById('statusBanner');
-addEventListener('offline',()=>b.style.display='block');
-addEventListener('online',()=>b.style.display='none');
-
-/* ===============================
-   PWA INSTALL
-================================= */
-if('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
-let p; addEventListener('beforeinstallprompt',e=>{e.preventDefault();p=e;installBtn.style.display='block'});
-installBtn.onclick=()=>{p.prompt();installBtn.style.display='none'};
-
-/* ===============================
-   AI ENGINE + MARKOV + CLUSTER + BACKTEST
-================================= */
-function buildCombinedDataset(raw){
- const all=[];
- raw.forEach(r=>[r.First,r.Second,r.Third].forEach(n=>{if(n && n.length===4) all.push({number:n,date:new Date(r.Date)}})));
- return all;
-}
-
-function analyzeNumbers(dataset){
- const stats={};
- dataset.forEach(d=>{
-   if(!stats[d.number]) stats[d.number]={count:0,lastSeen:d.date,gaps:[]};
-   stats[d.number].count++;
-   if(stats[d.number].lastSeen<d.date){
-     stats[d.number].gaps.push((d.date-stats[d.number].lastSeen)/86400000);
-     stats[d.number].lastSeen=d.date;
-   }
- });
- const now=new Date();
- Object.keys(stats).forEach(n=>{
-   const s=stats[n];
-   s.avgGap=s.gaps.length?s.gaps.reduce((a,b)=>a+b,0)/s.gaps.length:999;
-   s.currentGap=(now-s.lastSeen)/86400000;
- });
- return stats;
-}
-
-function mlScore(stats){
- const maxFreq=Math.max(...Object.values(stats).map(s=>s.count));
- return Object.entries(stats).map(([num,s])=>{
-   const freqScore=s.count/maxFreq;
-   const gapScore=Math.min(s.currentGap/s.avgGap,2);
-   const trendScore=s.count>3?0.2:0;
-   const score=freqScore*0.5 + gapScore*0.3 + trendScore*0.2;
-   return {number:num,score:score,freq:s.count,gap:Math.round(s.currentGap),avgGap:Math.round(s.avgGap)};
- }).sort((a,b)=>b.score-a.score);
-}
-
-function renderAI(results){
- const t=document.getElementById('aiTable');
- const e=document.getElementById('aiExplain');
- t.innerHTML='<tr><th>Rank</th><th>Number</th><th>Score</th><th>Frequency</th><th>Gap</th></tr>';
- e.innerHTML='';
- results.slice(0,4).forEach((r,i)=>{
-   t.innerHTML+=`<tr><td>${i+1}</td><td><b>${r.number}</b></td><td>${r.score.toFixed(2)}</td><td>${r.freq}</td><td>${r.gap} days</td></tr>`;
-   e.innerHTML+=`<p><b>${r.number}</b> → freq ${r.freq}, gap ${r.gap} days (avg ${r.avgGap}) → high probability</p>`;
- });
-}
-
-async function runAI(){
- const raw=window.uploadedCSV || await fetchSheetData();
- const combined=buildCombinedDataset(raw);
- const stats=analyzeNumbers(combined);
- const ranked=mlScore(stats);
- renderAI(ranked);
-}
-
-/* ===============================
-   MARKOV CHAIN
-================================= */
-function runMarkov(data){
- const table=document.getElementById('markovTable');
- const seq={};
- for(let i=0;i<data.length-1;i++){
-   const current=[data[i].First,data[i].Second,data[i].Third].filter(Boolean);
-   const next=[data[i+1].First,data[i+1].Second,data[i+1].Third].filter(Boolean);
-   current.forEach(c=>{if(!seq[c]) seq[c]={};next.forEach(n=>seq[c][n]=(seq[c][n]||0)+1);});
- }
- table.innerHTML='<tr><th>Number</th><th>Next Probable Numbers</th></tr>';
- Object.keys(seq).slice(0,10).forEach(k=>{
-   const nxt=Object.entries(seq[k]).sort((a,b)=>b[1]-a[1]).map(e=>e[0]).slice(0,4).join(', ');
-   table.innerHTML+=`<tr><td>${k}</td><td>${nxt}</td></tr>`;
- });
-}
-
-/* ===============================
-   K-MEANS CLUSTERING
-================================= */
-function runCluster(data){
- const f={}; data.forEach(r=>[r.First,r.Second,r.Third].forEach(n=>{if(n) f[n]=(f[n]||0)+1;}));
- const counts=Object.values(f);
- const avg=counts.reduce((a,b)=>a+b,0)/counts.length;
- const t=document.getElementById('clusterTable');
- t.innerHTML='<tr><th>Number</th><th>Cluster</th><th>Freq</th></tr>';
- Object.keys(f).forEach(n=>{
-   const cluster=f[n]>avg?'Hot':f[n]<avg?'Cold':'Neutral';
-   t.innerHTML+=`<tr><td>${n}</td><td>${cluster}</td><td>${f[n]}</td></tr>`;
- });
-}
-
-/* ===============================
-   BACKTESTING
-================================= */
-function runBacktest(data){
- const topNums=[]; data.forEach(r=>[r.First,r.Second,r.Third].forEach(n=>{if(n&&!topNums.includes(n)) topNums.push(n);}));
- const t=document.getElementById('backtestTable');
- t.innerHTML='<tr><th>Number</th><th>Hits</th></tr>';
- topNums.slice(0,10).forEach(n=>{
-   const hits=data.filter(r=>[r.First,r.Second,r.Third].includes(n)).length;
-   t.innerHTML+=`<tr><td>${n}</td><td>${hits}</td></tr>`;
- });
-}
-
-/* ===============================
-   AUTO LOAD
-================================= */
-loadResults('magnum');
-
-</script>
+<script src="js/loader.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/picks.js"></script>
 </body>
 </html>
