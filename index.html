@@ -1,35 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Malaysia 4D Analytics</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<h1>Malaysia 4D Analytics Suite</h1>
+<h1>📊 Malaysia 4D Analytics Suite</h1>
 
 <section>
-  <h2>Manual Pick Controls</h2>
-  <label>Must include digits (comma):</label>
-  <input id="mustDigits" value="1,2">
-  <label>Exclude digits:</label>
-  <input id="excludeDigits" value="">
-  <button onclick="generatePicks()">Generate Picks</button>
+  <h2>Logic Picks (Editable)</h2>
+  <input id="mustDigits" value="1,2" />
+  <button onclick="runAnalysis()">Run Analysis</button>
 </section>
 
 <section>
   <h2>Top Picks</h2>
-  <ul id="picks"></ul>
+  <ul id="results"></ul>
 </section>
 
-<section>
-  <h2>Frequency Analysis</h2>
-  <table id="freqTable"></table>
-</section>
-
-<script src="js/loader.js"></script>
+<script src="js/data.js"></script>
+<script src="js/logic.js"></script>
 <script src="js/analytics.js"></script>
-<script src="js/picks.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
