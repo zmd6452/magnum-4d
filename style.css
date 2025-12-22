@@ -1,16 +1,33 @@
 body {
   font-family: Arial, sans-serif;
+  background: #f4f6f8;
   padding: 20px;
-  background: #f7f7f7;
 }
 
-h1 { color: #222; }
-section { margin-bottom: 30px; }
+h1, h2 {
+  text-align: center;
+}
+
+.controls {
+  background: white;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+input, button {
+  padding: 8px;
+  margin-top: 5px;
+}
 
 table {
+  width: 100%;
+  background: white;
   border-collapse: collapse;
 }
-td, th {
-  border: 1px solid #ccc;
-  padding: 6px 10px;
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
 }
