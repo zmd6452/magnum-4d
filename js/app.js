@@ -1,15 +1,20 @@
 function runAnalysis() {
-  const input = document.getElementById("mustDigits").value;
-  const mustDigits = input.split(",").map(d => d.trim());
+  const requiredDigits =
+    document.getElementById("requiredDigits").value;
 
-  const picks = analyze(drawData, mustDigits);
+  const freq = calculateFrequency(draws);
+  renderFrequency(freq);
 
-  const ul = document.getElementById("results");
+  const picks = generatePicks(freq, requiredDigits);
+  const ul = document.getElementById("picks");
   ul.innerHTML = "";
 
-  picks.forEach(n => {
+  picks.forEach(p => {
     const li = document.createElement("li");
-    li.textContent = n;
+    li.textContent = p;
     ul.appendChild(li);
   });
 }
+
+// Auto run on load
+runAnalysis();
