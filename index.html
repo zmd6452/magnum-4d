@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Malaysia 4D Analytics Suite</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <h1>🎰 Malaysia 4D Analytics Suite</h1>
 
-<section class="controls">
-  <h3>Logic Pick Controls</h3>
-  <label>Required Digits (comma separated):</label>
-  <input id="requiredDigits" value="1,2">
-  <button onclick="runAnalysis()">Run Analysis</button>
+<section>
+  <h2>Logic Controls</h2>
+  <label>
+    Must include digits:
+    <input id="mustDigits" value="1,2">
+  </label>
+  <button onclick="runPrediction()">Run Today Analysis</button>
 </section>
 
 <section>
@@ -30,7 +31,7 @@
 <script src="config.js"></script>
 <script src="data.js"></script>
 <script src="analytics.js"></script>
-<script src="picks.js"></script>
+<script src="predictor.js"></script>
 
 </body>
 </html>
