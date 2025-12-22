@@ -1,16 +1,21 @@
 body {
   font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
   padding: 20px;
+  background: #f4f6f9;
 }
 
 h1, h2 {
-  color: #38bdf8;
+  text-align: center;
+}
+
+.controls {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 input {
   padding: 6px;
+  font-size: 16px;
   width: 120px;
 }
 
@@ -20,6 +25,25 @@ button {
   cursor: pointer;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
+}
+
 ul {
-  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+  text-align: center;
+}
+
+li {
+  font-size: 20px;
+  font-weight: bold;
 }
