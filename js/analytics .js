@@ -1,14 +1,23 @@
-function analyze(data, mustDigits) {
-  const results = [];
+function calculateFrequency(draws) {
+  const freq = {};
 
-  for (let i = 0; i < 10000; i++) {
-    const num = i.toString().padStart(4, "0");
+  draws.forEach(d => {
+    d.nums.forEach(n => {
+      freq[n] = (freq[n] || 0) + 1;
+    });
+  });
 
-    if (!mustContainDigits(num, mustDigits)) continue;
+  return freq;
+}
 
-    results.push(num);
-    if (results.length >= 10) break;
-  }
+function renderFrequency(freq) {
+  const table = document.getElementById("freqTable");
+  table.innerHTML = "<tr><th>Number</th><th>Count</th></tr>";
 
-  return results;
+  Object.entries(freq)
+    .sort((a,b) => b[1] - a[1])
+    .forEach(([num, count]) => {
+      const row = table.insertRow();
+      row.innerHTML = `<td>${num}</td><td>${count}</td>`;
+    });
 }
