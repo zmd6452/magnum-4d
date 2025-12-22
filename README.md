@@ -1,13 +1,14 @@
-Malaysia 4D Analytics Suite
+# Malaysia 4D Analytics Suite
 
-Features:
-- CSV-based real data
+## Features
 - Frequency analysis
-- Manual logic picks
-- GitHub Pages compatible
+- Logic-based number picks
+- Editable digit constraints
+- Works on GitHub Pages
 - No Node.js required
 
-Usage:
-1. Upload files to GitHub
+## How to Use
+1. Upload all files to GitHub
 2. Enable GitHub Pages
-3. Edit data/results.csv anytime
+3. Edit `data.js` with real results
+4. Change digits in UI anytime
