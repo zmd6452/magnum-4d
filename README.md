@@ -1,13 +1,13 @@
 # Malaysia 4D Analytics Suite
 
-✅ No Node.js  
-✅ No backend  
-✅ Works on GitHub Pages  
-✅ Editable digit logic  
+## Features
+- Frequency analysis
+- Configurable prediction logic
+- Must-include digit rules (e.g. 1 & 2)
+- No server required
+- GitHub Pages ready
 
-## How to use
-1. Upload all files to GitHub
+## Usage
+1. Upload files to GitHub
 2. Enable GitHub Pages
-3. Open the site
-4. Change required digits (e.g. 1,2)
-5. Click "Run Analysis"
+3. Edit `config.js` to change logic
